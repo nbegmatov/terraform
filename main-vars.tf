@@ -49,7 +49,18 @@ variable "created_by" {
   default     = ""
 }
 
+data "terraform_remote_state" "tf_state" {
+  backend = "s3"
+
+  config = {
+    bucket = "${var.org}-${var.namespace}-tf-state-bucket"
+    key    = "${var.namespace}-terraform-state"
+    region = "us-east-1"
+  }
+}
+
 locals {
+  vpc_id = lookup(data.terraform_remote_state.tf_state.outputs, "vpc_id", "")
   enabled = contains(["root", "lab", "prod"], var.namespace) == true ? 1 : 0
   default_tags = {
     created_by = "${var.created_by}"
