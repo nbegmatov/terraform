@@ -49,11 +49,11 @@ resource "aws_subnet" "public_subnet" {
   vpc_id                  = aws_vpc.vpc[0].id
   count                   = local.enabled == 1 ? length(var.public_subnets_cidr) : 0
   cidr_block              = element(var.public_subnets_cidr, count.index)
-  availability_zone       = element(local.lab_availability_zones, count.index)
+  availability_zone       = element(local.availability_zones, count.index)
   map_public_ip_on_launch = true
 
   tags = {
-    Name        = "${var.namespace}-${element(local.lab_availability_zones, count.index)}-public-subnet"
+    Name        = "${var.namespace}-${element(local.availability_zones, count.index)}-public-subnet"
     Environment = "${var.namespace}"
   }
 }
@@ -64,11 +64,11 @@ resource "aws_subnet" "private_subnet" {
   vpc_id                  = aws_vpc.vpc[0].id
   count                   = local.enabled == 1 ? length(var.private_subnets_cidr) : 0
   cidr_block              = element(var.private_subnets_cidr, count.index)
-  availability_zone       = element(local.lab_availability_zones, count.index)
+  availability_zone       = element(local.availability_zones, count.index)
   map_public_ip_on_launch = false
 
   tags = {
-    Name        = "${var.namespace}-${element(local.lab_availability_zones, count.index)}-private-subnet"
+    Name        = "${var.namespace}-${element(local.availability_zones, count.index)}-private-subnet"
     Environment = "${var.namespace}"
   }
 }
@@ -129,7 +129,7 @@ resource "aws_route_table_association" "private" {
 resource "aws_security_group" "default" {
   count = local.enabled
   name        = "${var.namespace}-default-sg"
-  description = "Default SG to alllow traffic from the VPC"
+  description = "Default SG to allow traffic from the VPC"
   vpc_id      = aws_vpc.vpc[0].id
   depends_on = [
     aws_vpc.vpc

@@ -19,6 +19,6 @@ variable "region" {
 }
 
 locals {
-  enabled = contains(["prod"], var.namespace) ? 1 : 0
-  lab_availability_zones = ["${var.region}a", "${var.region}b", "${var.region}c"]
+  enabled = contains(["lab"], var.namespace) ? 1 : 0
+  availability_zones = ["${var.region}a", "${var.region}b", "${var.region}c"]
 }
