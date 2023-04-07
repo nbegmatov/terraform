@@ -99,7 +99,7 @@ resource "aws_route_table" "public" {
 # Route for Internet Gateway
 resource "aws_route" "public_internet_gateway" {
   count = local.enabled
-  route_table_id         = aws_route_table.public[0].id
+  route_table_did         = aws_route_table.public[0].id
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.ig[0].id
 }
