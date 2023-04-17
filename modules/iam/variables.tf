@@ -15,7 +15,7 @@ variable "groups_users" {
   default = {
     developers = ["mroof", "hhufford", "egreigman", "tnguyen", "jaldrich"]
     devops     = ["nbegmatov", "amukkamala", "wgraham"]
-    admins     = ["gcolburn", "vgoodman", "cmartinez", "munwin"]
+    admins     = ["gcolburn", "vgoodman", "cmartinez", "munwin", "tina-dev"]
   }
 }
 

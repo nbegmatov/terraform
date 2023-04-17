@@ -1,3 +1,5 @@
+data "aws_availability_zones" "available" {}
+
 # VPC
 resource "aws_vpc" "this" {
   cidr_block           = var.vpc_cidr
@@ -53,7 +55,7 @@ resource "aws_subnet" "public" {
   count = length(var.public_subnets_cidr)
   vpc_id                  = aws_vpc.this.id
   cidr_block              = element(var.public_subnets_cidr, count.index)
-  availability_zone       = element(local.availability_zones, count.index)
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
   map_public_ip_on_launch = true
   tags = merge({
     Name        = "${var.namespace}-${element(local.availability_zones, count.index)}-public"

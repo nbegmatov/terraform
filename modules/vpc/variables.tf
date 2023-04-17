@@ -23,7 +23,3 @@ variable "region" {
 variable "common_tags" {
   type = map(string)
 }
-
-locals {
-  availability_zones = ["${var.region}a", "${var.region}b", "${var.region}c"]
-}
