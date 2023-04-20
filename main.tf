@@ -21,7 +21,7 @@ resource "aws_s3_bucket" "s3-backend" {
     }
   }
 
-  tags = merge(local.default_tags, tomap({ "Name" = "${var.org}-${var.namespace} S3 Remote Terraform State Store" }))
+  tags = merge(local.common_tags, { "Name" = "${var.org}-${var.namespace}-ft-state" })
 }
 
 resource "aws_s3_bucket_public_access_block" "block" {

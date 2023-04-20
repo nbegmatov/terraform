@@ -46,7 +46,7 @@ variable "namespace_to_account" {
 
 variable "created_by" {
   description = "User who is executing this script"
-  default     = ""
+  default     = null
 }
 
 data "terraform_remote_state" "tf_state" {
@@ -62,8 +62,9 @@ data "terraform_remote_state" "tf_state" {
 locals {
   vpc_id = lookup(data.terraform_remote_state.tf_state.outputs, "vpc_id", "")
   enabled = contains(["root", "lab", "prod"], var.namespace) == true ? 1 : 0
-  default_tags = {
-    created_by = "${var.created_by}"
+  common_tags = {
+    created_by = var.created_by
+    Environment = var.namespace
   }
 }
 

@@ -1,3 +1,5 @@
+variable "name" {}
+
 variable "namespace" {}
 
 variable "vpc_cidr" {
@@ -18,7 +20,6 @@ variable "region" {
   description = "Region in which the bastion host will be launched"
 }
 
-locals {
-  enabled = contains(["lab"], var.namespace) ? 1 : 0
-  availability_zones = ["${var.region}a", "${var.region}b", "${var.region}c"]
+variable "common_tags" {
+  type = map(string)
 }
