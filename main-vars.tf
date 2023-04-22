@@ -1,3 +1,30 @@
+data "terraform_remote_state" "tf_state" {
+  backend = "s3"
+
+  config = {
+    bucket = "${var.org}-${var.namespace}-tf-state-bucket"
+    key    = "${var.namespace}-terraform-state"
+    region = "us-east-1"
+  }
+}
+
+locals {
+  vpc_id = lookup(data.terraform_remote_state.tf_state.outputs, "vpc_id", "")
+  enabled = contains(["root", "lab", "prod"], var.namespace) == true ? 1 : 0
+  common_tags = {
+    created_by = var.created_by
+    Environment = var.namespace
+  }
+}
+
+data "aws_route53_zone" "main_zone" {
+  name         = var.main_zone_name
+  private_zone = false
+}
+
+variable "main_zone_name" {
+}
+
 variable "org" {
   default = "yurtah"
 }
@@ -48,23 +75,3 @@ variable "created_by" {
   description = "User who is executing this script"
   default     = null
 }
-
-data "terraform_remote_state" "tf_state" {
-  backend = "s3"
-
-  config = {
-    bucket = "${var.org}-${var.namespace}-tf-state-bucket"
-    key    = "${var.namespace}-terraform-state"
-    region = "us-east-1"
-  }
-}
-
-locals {
-  vpc_id = lookup(data.terraform_remote_state.tf_state.outputs, "vpc_id", "")
-  enabled = contains(["root", "lab", "prod"], var.namespace) == true ? 1 : 0
-  common_tags = {
-    created_by = var.created_by
-    Environment = var.namespace
-  }
-}
-

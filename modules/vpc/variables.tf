@@ -16,10 +16,6 @@ variable "private_subnets_cidr" {
   description = "CIDR block for Private Subnet"
 }
 
-variable "region" {
-  description = "Region in which the bastion host will be launched"
-}
-
 variable "common_tags" {
   type = map(string)
 }

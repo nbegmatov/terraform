@@ -2,7 +2,7 @@ define RUNNING_USER
 $(shell whoami)
 endef
 
-TERRAFORM_FLAGS  	?= -var namespace="$(NAMESPACE)" -var created_by="$(RUNNING_USER)"
+TERRAFORM_FLAGS  	?= -var namespace="$(NAMESPACE)" -var-file="$(NAMESPACE)".tfvars -var created_by="$(RUNNING_USER)"
 PLAN_FILE         	?= yurtah-$(NAMESPACE)-tf.plan
 
 plan: ## run terraform plan with given parameters
