@@ -7,17 +7,13 @@ variable "vpc_cidr" {
 }
 
 variable "public_subnets_cidr" {
-  type        = list
+  type        = list(any)
   description = "CIDR block for Public Subnet"
 }
 
 variable "private_subnets_cidr" {
-  type        = list
+  type        = list(any)
   description = "CIDR block for Private Subnet"
-}
-
-variable "region" {
-  description = "Region in which the bastion host will be launched"
 }
 
 variable "common_tags" {

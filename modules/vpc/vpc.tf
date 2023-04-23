@@ -7,7 +7,7 @@ resource "aws_vpc" "this" {
   enable_dns_support   = true
 
   tags = merge({
-    Name        = "${var.namespace}-${var.name}"
+    Name = "${var.namespace}-${var.name}"
   }, var.common_tags)
   lifecycle {
     ignore_changes = [tags.created_by]
@@ -19,7 +19,7 @@ resource "aws_vpc" "this" {
 resource "aws_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
   tags = merge({
-    Name        = "${var.namespace}-${var.name}"
+    Name = "${var.namespace}-${var.name}"
   }, var.common_tags)
   lifecycle {
     ignore_changes = [tags.created_by]
@@ -28,9 +28,9 @@ resource "aws_internet_gateway" "this" {
 
 # Elastic-IP (eip) for NAT
 resource "aws_eip" "this" {
-  vpc        = true
+  vpc = true
   tags = merge({
-    Name        = "${var.namespace}-${var.name}"
+    Name = "${var.namespace}-${var.name}"
   }, var.common_tags)
   lifecycle {
     ignore_changes = [tags.created_by]
@@ -43,7 +43,7 @@ resource "aws_nat_gateway" "nat" {
   subnet_id     = element(aws_subnet.public.*.id, 0)
 
   tags = merge({
-    Name        = "${var.namespace}-${var.name}"
+    Name = "${var.namespace}-${var.name}"
   }, var.common_tags)
   lifecycle {
     ignore_changes = [tags.created_by]
@@ -52,13 +52,13 @@ resource "aws_nat_gateway" "nat" {
 
 # Public subnet
 resource "aws_subnet" "public" {
-  count = length(var.public_subnets_cidr)
+  count                   = length(var.public_subnets_cidr)
   vpc_id                  = aws_vpc.this.id
   cidr_block              = element(var.public_subnets_cidr, count.index)
   availability_zone       = data.aws_availability_zones.available.names[count.index]
   map_public_ip_on_launch = true
   tags = merge({
-    Name        = "${var.namespace}-${element(local.availability_zones, count.index)}-public"
+    Name = "${var.namespace}-${data.aws_availability_zones.available.names[count.index]}-public"
   }, var.common_tags)
   lifecycle {
     ignore_changes = [tags.created_by]
@@ -68,14 +68,14 @@ resource "aws_subnet" "public" {
 
 # Private Subnet
 resource "aws_subnet" "private" {
-  count = length(var.public_subnets_cidr)
+  count                   = length(var.public_subnets_cidr)
   vpc_id                  = aws_vpc.this.id
   cidr_block              = element(var.private_subnets_cidr, count.index)
-  availability_zone       = element(local.availability_zones, count.index)
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
   map_public_ip_on_launch = false
 
   tags = merge({
-    Name        = "${var.namespace}-${element(local.availability_zones, count.index)}-private"
+    Name = "${var.namespace}-${data.aws_availability_zones.available.names[count.index]}-private"
   }, var.common_tags)
   lifecycle {
     ignore_changes = [tags.created_by]
@@ -88,7 +88,7 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.this.id
 
   tags = merge({
-    Name        = "${var.namespace}-${var.name}-private"
+    Name = "${var.namespace}-${var.name}-private"
   }, var.common_tags)
   lifecycle {
     ignore_changes = [tags.created_by]
@@ -100,7 +100,7 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.this.id
 
   tags = merge({
-    Name        = "${var.namespace}-${var.name}-public"
+    Name = "${var.namespace}-${var.name}-public"
   }, var.common_tags)
   lifecycle {
     ignore_changes = [tags.created_by]
@@ -123,13 +123,13 @@ resource "aws_route" "private_nat_gateway" {
 
 # Route table associations for both Public & Private Subnets
 resource "aws_route_table_association" "public" {
-  count = length(var.public_subnets_cidr)
+  count          = length(var.public_subnets_cidr)
   subnet_id      = element(aws_subnet.public.*.id, count.index)
   route_table_id = aws_route_table.public.id
 }
 
 resource "aws_route_table_association" "private" {
-  count = length(var.private_subnets_cidr)
+  count          = length(var.private_subnets_cidr)
   subnet_id      = element(aws_subnet.private.*.id, count.index)
   route_table_id = aws_route_table.private.id
 }
@@ -158,7 +158,7 @@ resource "aws_security_group" "default" {
   }
 
   tags = merge({
-    Name        = "${var.namespace}-${var.name}-default"
+    Name = "${var.namespace}-${var.name}-default"
   }, var.common_tags)
   lifecycle {
     ignore_changes = [tags.created_by]
