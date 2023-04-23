@@ -1,5 +1,5 @@
 variable "child_accounts" {}
-variable "account_name_to_account_id" {}
+variable "namespace_to_aws_account_id" {}
 variable "namespace" {}
 
 locals {
@@ -11,7 +11,7 @@ locals {
 }
 
 variable "groups_users" {
-  type = map
+  type = map(any)
   default = {
     developers = ["mroof", "hhufford", "egreigman", "tnguyen", "jaldrich"]
     devops     = ["nbegmatov", "amukkamala", "wgraham"]
@@ -20,7 +20,7 @@ variable "groups_users" {
 }
 
 variable "role_to_policy" {
-  type = map
+  type = map(any)
   default = {
     root = {},
     prod = {

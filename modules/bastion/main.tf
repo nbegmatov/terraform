@@ -11,17 +11,17 @@ resource "aws_security_group" "this" {
 }
 
 resource "aws_security_group_rule" "ingress" {
-  type             = "ingress"
-  from_port        = "22"
-  to_port          = "22"
-  protocol         = "TCP"
-  cidr_blocks      = concat(["75.70.7.210/32"], var.proofpoint_corp_ips)
+  type        = "ingress"
+  from_port   = "22"
+  to_port     = "22"
+  protocol    = "TCP"
+  cidr_blocks = concat(["75.70.7.210/32"], var.proofpoint_corp_ips)
 
   security_group_id = aws_security_group.this.id
 }
 
 resource "aws_security_group_rule" "egress" {
-  type             = "egress"
+  type        = "egress"
   from_port   = 0
   to_port     = 0
   protocol    = "-1"
@@ -77,7 +77,7 @@ resource "aws_launch_template" "this" {
   name                   = var.name
   image_id               = local.instance_configs[var.namespace]["image_id"]
   instance_type          = local.instance_configs[var.namespace]["instance_type"]
-  vpc_security_group_ids    = [aws_security_group.this.id]
+  vpc_security_group_ids = [aws_security_group.this.id]
   update_default_version = true
   key_name               = local.key_name
 
@@ -89,7 +89,7 @@ resource "aws_launch_template" "this" {
 
   lifecycle {
     create_before_destroy = true
-    ignore_changes = [tags.created_by]
+    ignore_changes        = [tags.created_by]
   }
 }
 

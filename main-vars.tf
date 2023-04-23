@@ -9,10 +9,10 @@ data "terraform_remote_state" "tf_state" {
 }
 
 locals {
-  vpc_id = lookup(data.terraform_remote_state.tf_state.outputs, "vpc_id", "")
+  vpc_id  = lookup(data.terraform_remote_state.tf_state.outputs, "vpc_id", "")
   enabled = contains(["root", "lab", "prod"], var.namespace) == true ? 1 : 0
   common_tags = {
-    created_by = var.created_by
+    created_by  = var.created_by
     Environment = var.namespace
   }
 }
@@ -41,7 +41,7 @@ variable "child_accounts" {
   default = ["lab", "prod"]
 }
 
-variable "account_name_to_account_id" {
+variable "namespace_to_aws_account_id" {
   default = {
     root = "119831432021"
     lab  = "535741076684"

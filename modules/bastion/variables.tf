@@ -1,16 +1,16 @@
 locals {
   key_name = "${var.namespace}-bh-key"
   tags = merge({
-    Name        = "${var.namespace}-${var.name}"
+    Name = "${var.namespace}-${var.name}"
   }, var.common_tags)
 
   instance_configs = {
     "lab" = {
-      image_id = "ami-06878d265978313ca"
-      instance_type = "t2.micro"
-      key_name = ""
-      asg_max_size = 1
-      asg_min_size = 1
+      image_id             = "ami-06878d265978313ca"
+      instance_type        = "t2.micro"
+      key_name             = ""
+      asg_max_size         = 1
+      asg_min_size         = 1
       asg_desired_capacity = 1
     }
   }

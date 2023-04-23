@@ -5,7 +5,7 @@ data "aws_iam_policy_document" "assume_role" {
     ]
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::${var.account_name_to_account_id["root"]}:root"]
+      identifiers = ["arn:aws:iam::${var.namespace_to_aws_account_id["root"]}:root"]
     }
   }
 }
