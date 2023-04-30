@@ -1,5 +1,3 @@
-data "aws_availability_zones" "available" {}
-
 # VPC
 resource "aws_vpc" "this" {
   cidr_block           = var.vpc_cidr
@@ -7,14 +5,13 @@ resource "aws_vpc" "this" {
   enable_dns_support   = true
 
   tags = merge({
-    Name = "${var.namespace}-${var.name}"
+    Name = var.name
   }, var.common_tags)
   lifecycle {
     ignore_changes = [tags.created_by]
   }
 }
 
-# Subnets
 # Internet Gateway for Public Subnet
 resource "aws_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
@@ -28,9 +25,10 @@ resource "aws_internet_gateway" "this" {
 
 # Elastic-IP (eip) for NAT
 resource "aws_eip" "this" {
+  for_each = var.az_to_subnets
   vpc = true
   tags = merge({
-    Name = "${var.namespace}-${var.name}"
+    Name = var.name
   }, var.common_tags)
   lifecycle {
     ignore_changes = [tags.created_by]
@@ -38,12 +36,13 @@ resource "aws_eip" "this" {
 }
 
 # NAT
-resource "aws_nat_gateway" "nat" {
-  allocation_id = aws_eip.this.id
-  subnet_id     = element(aws_subnet.public.*.id, 0)
+resource "aws_nat_gateway" "this" {
+  for_each = var.az_to_subnets
+  allocation_id = aws_eip.this[each.key].id
+  subnet_id     = aws_subnet.public[each.key].id
 
   tags = merge({
-    Name = "${var.namespace}-${var.name}"
+    Name = "${var.name}-${each.key}"
   }, var.common_tags)
   lifecycle {
     ignore_changes = [tags.created_by]
@@ -52,43 +51,29 @@ resource "aws_nat_gateway" "nat" {
 
 # Public subnet
 resource "aws_subnet" "public" {
-  count                   = length(var.public_subnets_cidr)
+  for_each = var.az_to_subnets
   vpc_id                  = aws_vpc.this.id
-  cidr_block              = element(var.public_subnets_cidr, count.index)
-  availability_zone       = data.aws_availability_zones.available.names[count.index]
+  cidr_block              = each.value["public_cidr"]
+  availability_zone       = each.key
   map_public_ip_on_launch = true
   tags = merge({
-    Name = "${var.namespace}-${data.aws_availability_zones.available.names[count.index]}-public"
+    Name = "public-${each.key}"
   }, var.common_tags)
   lifecycle {
     ignore_changes = [tags.created_by]
   }
 }
-
 
 # Private Subnet
 resource "aws_subnet" "private" {
-  count                   = length(var.public_subnets_cidr)
+  for_each = var.az_to_subnets
   vpc_id                  = aws_vpc.this.id
-  cidr_block              = element(var.private_subnets_cidr, count.index)
-  availability_zone       = data.aws_availability_zones.available.names[count.index]
+  cidr_block              = each.value["private_cidr"]
+  availability_zone       = each.key
   map_public_ip_on_launch = false
 
   tags = merge({
-    Name = "${var.namespace}-${data.aws_availability_zones.available.names[count.index]}-private"
-  }, var.common_tags)
-  lifecycle {
-    ignore_changes = [tags.created_by]
-  }
-}
-
-
-# Routing tables to route traffic for Private Subnet
-resource "aws_route_table" "private" {
-  vpc_id = aws_vpc.this.id
-
-  tags = merge({
-    Name = "${var.namespace}-${var.name}-private"
+    Name = "private-${each.key}"
   }, var.common_tags)
   lifecycle {
     ignore_changes = [tags.created_by]
@@ -100,7 +85,7 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.this.id
 
   tags = merge({
-    Name = "${var.namespace}-${var.name}-public"
+    Name = "${var.name}-public"
   }, var.common_tags)
   lifecycle {
     ignore_changes = [tags.created_by]
@@ -114,29 +99,43 @@ resource "aws_route" "public_internet_gateway" {
   gateway_id             = aws_internet_gateway.this.id
 }
 
+# Routing tables to route traffic for Private Subnet
+resource "aws_route_table" "private" {
+  for_each = var.az_to_subnets
+  vpc_id = aws_vpc.this.id
+
+  tags = merge({
+    Name = "${var.name}-private-${each.key}"
+  }, var.common_tags)
+  lifecycle {
+    ignore_changes = [tags.created_by]
+  }
+}
+
 # Route for NAT
 resource "aws_route" "private_nat_gateway" {
-  route_table_id         = aws_route_table.private.id
+  for_each = var.az_to_subnets
+  route_table_id         = aws_route_table.private[each.key].id
   destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.nat.id
+  nat_gateway_id         = aws_nat_gateway.this[each.key].id
 }
 
 # Route table associations for both Public & Private Subnets
 resource "aws_route_table_association" "public" {
-  count          = length(var.public_subnets_cidr)
-  subnet_id      = element(aws_subnet.public.*.id, count.index)
+  for_each = var.az_to_subnets
+  subnet_id      = aws_subnet.public[each.key].id
   route_table_id = aws_route_table.public.id
 }
 
 resource "aws_route_table_association" "private" {
-  count          = length(var.private_subnets_cidr)
-  subnet_id      = element(aws_subnet.private.*.id, count.index)
-  route_table_id = aws_route_table.private.id
+  for_each = var.az_to_subnets
+  subnet_id      = aws_subnet.private[each.key].id
+  route_table_id = aws_route_table.private[each.key].id
 }
 
 # Default Security Group of VPC
 resource "aws_security_group" "default" {
-  name        = "${var.namespace}-default"
+  name        = "${var.name}-default"
   description = "Default SG to allow traffic from the VPC"
   vpc_id      = aws_vpc.this.id
   depends_on = [
@@ -158,7 +157,7 @@ resource "aws_security_group" "default" {
   }
 
   tags = merge({
-    Name = "${var.namespace}-${var.name}-default"
+    Name = "${var.name}-default"
   }, var.common_tags)
   lifecycle {
     ignore_changes = [tags.created_by]

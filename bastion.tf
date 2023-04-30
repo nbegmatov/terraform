@@ -1,6 +1,6 @@
 module "bastion" {
   source            = "./modules/bastion"
-  count             = contains(["lab"], var.namespace) ? 1 : 0
+  count             = contains([""], var.namespace) ? 1 : 0
   name              = "bastion-host"
   namespace         = var.namespace
   vpc_id            = module.main-vpc[0].vpc_id
